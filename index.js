@@ -10,11 +10,29 @@ mongoose.connect('mongodb://localhost/playground')
 
 //schemas are specific to mongoose, not MongoDB, alone.
 const courseSchema = new mongoose.Schema({
-    name: String,
-    author: String,
+    name: { 
+        type: String,
+        required: true,
+        minlength: 5,
+        maxlength: 255,
+        //match: /pattern/  //<= can use regex, but doesn't make sense here.
+    }, //Invalidated entries excluding name field.
+    //'required: ' validation is a mongoose feature. MongoDB doesn't care.
+    category: {
+        type: String,
+        required: true,
+        enum: ['web', 'mobile', 'network']//category needs to be one of these.
+    },
+    author: String,                        
     tags: [ String ],
     date: { type: Date, default: Date.now },
-    isPublished: Boolean
+    isPublished: Boolean,
+    price: {
+        type: Number,
+        required: function(){ return this.isPublished; }, //function can't be anonymous. Anon can't use 'this' keyword.
+        min: 10,
+        max: 200
+    }
     //Acceptable types: String, Number, Boolean, Date, Buffer(binary), Array, ObjectId
 });
 
@@ -24,13 +42,23 @@ const Course = mongoose.model('Course', courseSchema);
 async function createCourse(){
     const course = new Course({
         name: 'React Course',
+        category: 'web',
         author: 'Mosh',
         tags: ['react', 'frontend'],
-        isPublished: true
+        isPublished: true,
+        price: 5
     });
     
-    const result = await course.save();
-    console.log(result);
+    try{
+        // await course.validate((err) => {   //mongoose's validate method returns void
+        //     if (err){}                     //Makes it less useful, less favorable to use.
+        // });
+        const result = await course.save();
+        console.log(result);
+    }
+    catch(ex){
+        console.log(ex.message);
+    }
 }
 
 //Mongoose is built on top of MongoDB driver. Comparison and logical operators are different
