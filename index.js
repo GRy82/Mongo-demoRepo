@@ -21,7 +21,9 @@ const courseSchema = new mongoose.Schema({
     category: {
         type: String,
         required: true,
-        enum: ['web', 'mobile', 'network']//category needs to be one of these.
+        enum: ['web', 'mobile', 'network'],//category needs to be one of these.
+        lowercase: true,
+        trim: true
     },
     author: String,                        
     tags: {
@@ -43,7 +45,9 @@ const courseSchema = new mongoose.Schema({
         type: Number,
         required: function(){ return this.isPublished; }, //function can't be anonymous. Anon can't use 'this' keyword.
         min: 10,
-        max: 200
+        max: 200,
+        get: v => Math.round(v),
+        set: v => Math.round(v)
     }
     //Acceptable types: String, Number, Boolean, Date, Buffer(binary), Array, ObjectId
 });
@@ -96,6 +100,14 @@ async function getCourses(){
     console.log(courses);
 }
 
+async function getCourse(id){
+    const course = await Course
+        .find({ _id: id })
+        .sort({ name: 1 })
+        .select({ name: 1, price: 1 })
+    
+    console.log(course);
+}
 //--------------------------------------------
 
 //Query-First: find by Id, modify properties, save(). 
