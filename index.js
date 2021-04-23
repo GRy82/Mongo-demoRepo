@@ -68,8 +68,9 @@ async function createCourse(){
         const result = await course.save();
         console.log(result);
     }
-    catch(ex){
-        console.log(ex.message);
+    catch(ex){ //ex.errors property is enumerable. it has an error for each schema field
+        for(field in ex.errors)
+            console.log(ex.errors[field].message);
     }
 }
 
