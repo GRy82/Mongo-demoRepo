@@ -14,16 +14,13 @@ const Author = mongoose.model('Author', authorSchema);
 
 const Course = mongoose.model('Course', new mongoose.Schema({
   name: String,
-  author: {
-    type: authorSchema,
-    required: true
-  } 
+  authors : [authorSchema] 
 }));
 
-async function createCourse(name, author) {
+async function createCourse(name, authors) {
   const course = new Course({
     name, 
-    author
+    authors
   }); 
   
   const result = await course.save();
@@ -50,7 +47,28 @@ async function updateAuthor(courseId){
   course.author.name = 'Mosh Hamedani';
   course.save(); // There is no course.author.save().
 }
-//createCourse('Node Course', new Author({ name: 'Mosh' }));
+
+async function addAuthor(courseId, author){
+  const course = await Course.findById(courseId);
+  course.authors.push(author);
+  course.save();
+}
+
+async function removeAuthor(courseId, authorId){
+  const course = await Course.findById(courseId);
+  const author = course.authors.id(authorId); //look up child object by Id with this method.
+  author.remove();
+  course.save();
+}
+
+// createCourse('Node Course', [
+//   new Author({ name: 'Mosh' }),
+//   new Author({ name: 'John' })
+// ]);
 //sub documents can only be saved in the context of their parent.
 
-updateAuthorAlt('6085fb56e6f1da5a93ad3d8e');
+//updateAuthorAlt('6085fb56e6f1da5a93ad3d8e');
+
+//addAuthor('6086002ef7520c5b66e34736', new Author({ name: 'Bill' }));
+
+removeAuthor('6086002ef7520c5b66e34736', '6086002ef7520c5b66e34735');
